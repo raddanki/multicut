@@ -4,24 +4,38 @@ from scipy.optimize import linprog
 import numpy as np
 import random
 
+"""
+Give any custom input graph for testing. 
+
+Output should have
+1. Graph type object {Refer Graph.py file for class definition}
+2. List of s-t pairs 
+
+"""
 def input_graph():
 
 	n = 5
 	G = Graph(n)
-	
-	
-	# G.Edges = [[0,1,0,0,1],[1,0,1,1,1],[0,1,0,1,0],[0,1,1,0,1],[1,1,0,1,0]]
+
 	G.Edges = [[0,1,1,1,1],[1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0]]
 	G.Wt = [[0,1,1,1,1],[1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0]]
 	
 	SS = [[0,1],[0,3],[2,3]]
 
-
 	return G, SS
 
+"""
+Generate a random graph with each edge being included with probability p.
+
+Weights in the graph are randomly initialized with integers from [1, maxwt].
+
+s-t pairs are randomly chosen among the vertices in the graph.
+
+"""
 def random_graph(n=7, k = 3, p=0.5, maxwt=100):
 
 
+	# random weighted graph
 	G = Graph(n)
 	E =[[0 for j in range(0,n)] for i in range(0,n)]
 	W =[[0 for j in range(0,n)] for i in range(0,n)]
@@ -35,6 +49,8 @@ def random_graph(n=7, k = 3, p=0.5, maxwt=100):
 	G.Edges = E
 	G.Wt = W
 
+
+	# random s-t pairs for multi-cut
 	SS = [[-1,-1] for i in range(0,k)]
 
 	for i in range(0, k):
@@ -49,6 +65,16 @@ def random_graph(n=7, k = 3, p=0.5, maxwt=100):
 
 	return G, SS
 
+"""
+Input:  Graph G and a set of source-sink pairs
+
+Write an LP for multicut by generating all possible paths between every source-sink
+
+Solve LP using lp solver
+
+Output: Fractional values for edges in LP solution 
+
+"""
 def lp(G, SS):
 
 	A_ub = []
@@ -56,7 +82,7 @@ def lp(G, SS):
 	c = []
 	Elist = []
 
-
+	# instead of creating a $n^2$ length vector, we will only create $|E| = m$ length vector
 	for i in range(0, G.n):
 		for j in range(i+1, G.n):
 			if G.Edges[i][j] == 1: 
@@ -64,6 +90,7 @@ def lp(G, SS):
 				Elist.append([i,j])
 
 
+	#generating constraints for lp by considering all paths for every source-sink pair
 	for i in range(0,len(SS)):
 
 		G.Paths = []
@@ -91,11 +118,10 @@ def lp(G, SS):
 						
 						count = count + 1
 
-
-	# print(len(A_ub))
+	#solve lp
 	res = linprog(c, A_ub=A_ub, b_ub=b_ub,bounds=(0,None),method='interior-point')
-	# print(res)
 	
+	#read the fractional values of lp for every edge in G
 	E = [[0 for i in range(0, G.n)] for j in range(0, G.n)]
 	for i in range(0, len(c)):
 		x1 = int(Elist[i][0])
@@ -105,6 +131,7 @@ def lp(G, SS):
 
 	return E,res
 	
+#remove edges of F from E and E_lp by setting the values to 0
 def removeEdges(F, E, E_lp):
 	for (i,j) in F:
 		E[i][j] = 0
@@ -114,6 +141,16 @@ def removeEdges(F, E, E_lp):
 
 	return E, E_lp
 
+"""
+Input : G, SS
+
+Find a fractional solution by solving LP
+
+Round the fractional values to give a valid cut
+
+Output : Approx-Multicut, LP-objective value
+
+"""
 def multicut(G, SS):
 
 	cutwt = 0.0
@@ -122,6 +159,7 @@ def multicut(G, SS):
 	W = G.Wt.copy()
 	r = 0
 
+	#multicut approximation algorithm
 	for i in range(0, len(SS)):
 		if G.connected(SS[i][0],SS[i][1], E) == True:
 
@@ -135,10 +173,12 @@ def multicut(G, SS):
 	return cutwt, res.fun
 
 # G, SS = input_graph()
-G, SS = random_graph()
+G, SS = random_graph(n=7, k = 3, p=0.5, maxwt=100)
 
-
+#cutwt : weight of the multicut from the approximation algorithm
+#opt_lb : Objective value of LP relaxation obtained from the lp solver. It serves as a lower bound for OPT cut.
 cutwt, opt_lb = multicut(G, SS)
+
 print('approx alg : ',cutwt, '\nlower bound for opt : ',opt_lb)
 
 

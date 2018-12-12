@@ -1,88 +1,4 @@
 import sys
-# class Graph:
-
-
-# 	def __init__(self, n):
-# 		self.n = n
-		
-# 		self.Edges = [[] for i in range(0,n)]
-# 		self.Wt = [[1.0 for j in range(0,n)] for i in range(0,n)]
-
-# 		self.lpG  = [[0 for j in range(0,n)] for i in range(0,n)]
-# 		self.lpwt = [[0.0 for j in range(0,n)] for i in range(0,n)]
-		
-# 		self.Paths = []
-		
-
-# 	#add an edge of weight u, v into the graph
-# 	def addEdge(self,u,v, w_uv):
-# 		self.Edges[u].append(v)
-# 		self.wt[u,v] = w_uv
-# 		self.wt[v,u] = w_uv
-
-# 	#add edges into list from adjacency matrix
-# 	def addEdges(self, E):
-# 		for i in range(0, len(E)):
-# 			for j in range(0, len(E[i])):
-# 				if not E[i][j] == 0:
-# 					self.addEdge(i, j, E[i][j])
-# 					self.lpG[i][j] = 1
-
-# 	#delete an edge from edge list E
-# 	def delEdge(self,u,v, E):
-# 		E[u].remove(v)
-
-
-# 	#check if two nodes are connected in the graph with edge list E. We use BFS.
-# 	def connected(self,u,v,E):
-
-# 		visited = [False for i in range(0, self.n)]
-# 		queue = []
-
-# 		queue.append(u)
-# 		visited[u] = True
-
-# 		found = False
-# 		while len(queue) > 0:
-# 			s = queue.pop(0)
-# 			for t in E[s]:
-# 				if visited[t] == False:
-# 					visited[t] = True
-# 					if t == v:
-# 						found == True
-# 						break
-# 					queue.append(t)
-
-
-# 		return found
-
-# 	#generate all the paths between source "s" and a fixed destination "v"
-# 	def generate_path(self,u,v, visited, path):
-
-# 		# print('u :',u,' v : ',v)
-# 		visited[u] = True
-# 		path.append(u)
-
-# 		if u == v:
-# 			self.Paths.append(path.copy())
-# 		else:
-# 			for t in self.Edges[u]:
-# 				if visited[t] == False:
-# 					self.generate_path(t, v, visited, path)
-
-# 		path.pop()
-# 		visited[u] = False
-
-# 	#find all shortest paths from a vertex u in graph lpG
-# 	def shortestpath(self, u):
-# 		dist = [2*self.n for i in range(0, self.n)]
-# 		spTree = []
-
-
-
-# 		return dist
-
-
 class Graph:
 
 
@@ -112,6 +28,7 @@ class Graph:
 					self.addEdge(i, j, E[i][j])
 					self.lpG[i][j] = 1
 
+
 	#delete an edge from edge list E
 	def delEdge(self,u,v, E):
 		E[u].remove(v)
@@ -140,10 +57,10 @@ class Graph:
 
 		return found
 
-	#generate all the paths between source "s" and a fixed destination "v"
+	#generate all the paths between source "s" and a fixed destination "v". All such paths are collected in self.Paths variable.
 	def generate_path(self,u,v, visited, path):
 
-		# print('u :',u,' v : ',v)
+
 		visited[u] = True
 		path.append(u)
 
@@ -156,6 +73,7 @@ class Graph:
 
 		path.pop()
 		visited[u] = False
+
 
 	#return min distance vertex which is not yet included in shortest path tree
 	def min_vertex(self, spTree, dist):
@@ -170,8 +88,7 @@ class Graph:
 
 		return dv
 
-
-	#find all shortest paths from a vertex u in graph lpG
+	#find all shortest path distances from a vertex u in graph with edges E using dijkstra's algorithm
 	def shortestpath(self, u, E):
 		dist = [sys.maxsize for i in range(0, self.n)]
 		spTree = [False for i in range(0,self.n)]
@@ -191,7 +108,7 @@ class Graph:
 
 		return dist
 
-	#find cut set in the graph
+	#find cut set in the graph i.e, all edges in E which are at a shortest distance of "r" from a vertex u.
 	def cutEdges(self, E, dist, r):
 		Br = []
 		for i in range(0,self.n):
