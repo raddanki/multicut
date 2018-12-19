@@ -152,6 +152,7 @@ def get_radius(G, k, E, W, V_opt, dist):
 			Br.append(i)
 
 	radius = [dist[i] for i in Br]
+	radius.sort()
 
 	for r in radius : 
 
