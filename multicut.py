@@ -3,6 +3,7 @@ from Graph import Graph
 from scipy.optimize import linprog
 import numpy as np
 import random
+import math
 
 """
 Give any custom input graph for testing. 
@@ -141,6 +142,43 @@ def removeEdges(F, E, E_lp):
 
 	return E, E_lp
 
+#find radius using ball growing
+def get_radius(G, k, E, W, V_opt, dist):
+		
+	Br = []
+
+	for i in range(0,G.n):
+		if dist[i] < 0.5:
+			Br.append(i)
+
+	radius = [dist[i] for i in Br]
+
+	for r in radius : 
+
+		V_r = float(V_opt)/k
+		c_r = 0.0
+		for k in range(0, len(Br)) :
+			for l in range(k+1, len(Br)):
+				
+				u = Br[k]
+				v = Br[l]
+
+				if E[u][v] > 0 : 
+
+					V_r = V_r + W[u][v]*E[u][v]
+
+		for u in range(0, len(E)):
+			for v in range(0, len(E[u])):
+				if E[u][v] > 0 and (u in Br and v not in Br):
+					V_r = V_r + W[u][v]*(r-dist[u])
+					c_r = c_r + W[u][v]
+		
+		if r > 0 and c_r <= 2*V_r*math.log(k+1) :
+			return np.nextafter(r,0) 
+
+	return np.nextafter(0.5,0)
+
+
 """
 Input : G, SS
 
@@ -159,12 +197,17 @@ def multicut(G, SS):
 	W = G.Wt.copy()
 	r = 0
 
+	#volume of OPT
+	V_opt = res.fun
+
 	#multicut approximation algorithm
 	for i in range(0, len(SS)):
 		if G.connected(SS[i][0],SS[i][1], E) == True:
 
-			r = random.uniform(0,0.5)
 			dist = G.shortestpath(SS[i][0],E_lp)
+
+			#r = random.uniform(0,0.5)			
+			r = get_radius(G, len(SS), E_lp, W, V_opt , dist)
 			F = G.cutEdges( E_lp, dist, r)
 
 			cutwt = cutwt + np.sum([W[i][j] for (i,j) in F])
